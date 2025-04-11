@@ -27,19 +27,8 @@ public class JwtServiceImpl implements JwtService {
     @Value("${jwt.expiration-ms}")
     private Long jwtExpiryMs;
 
-    @Override
-    public String generateToken(UserDetails userDetails) {
-        RappiUserDetails rappiUser = (RappiUserDetails) userDetails; // Cast seguro
-
-        return Jwts.builder()
-                .setSubject(rappiUser.getUsername())
-                .claim("userId", rappiUser.getId())
-                .claim("role", rappiUser.getUser().getRole().getName())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiryMs))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
-                .compact();
-    }
+    @Value("${jwt.refresh-expiration-ms}")
+    private Long refreshExpiryMs;
 
     @Override
     public Claims parseClaims(String token) {
@@ -64,5 +53,41 @@ public class JwtServiceImpl implements JwtService {
     public Key getSigningKey() {
         byte[] keyBytes = Base64.getDecoder().decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    @Override
+    public String generateAccessToken(UserDetails userDetails) {
+        RappiUserDetails rappiUser = (RappiUserDetails) userDetails;
+
+        return Jwts.builder()
+                .setSubject(rappiUser.getUsername())
+                .claim("userId", rappiUser.getId())
+                .claim("role", rappiUser.getUser().getRole().getName())
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiryMs))
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    @Override
+    public String generateRefreshToken(UserDetails userDetails) {
+        RappiUserDetails rappiUser = (RappiUserDetails) userDetails;
+
+        return Jwts.builder()
+                .setSubject(rappiUser.getUsername())
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + refreshExpiryMs))
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    @Override
+    public long getJwtExpirationMs() {
+        return jwtExpiryMs;
+    }
+
+    @Override
+    public long getRefreshExpirationMs() {
+        return refreshExpiryMs;
     }
 }

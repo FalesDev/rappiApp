@@ -8,6 +8,7 @@ import com.falesdev.rappi.security.service.RappiUserDetailsService;
 import com.falesdev.rappi.service.AuthenticationService;
 import com.falesdev.rappi.security.service.CustomOAuth2UserService;
 import com.falesdev.rappi.service.JwtService;
+import com.falesdev.rappi.service.RefreshTokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -39,16 +40,20 @@ public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
     private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
 
     @Bean
     public AuthenticationSuccessHandler oauthSuccessHandler() {
         return (request, response, authentication) -> {
             RappiUserDetails userDetails = (RappiUserDetails) authentication.getPrincipal();
-            String token = jwtService.generateToken(userDetails);
-            response.sendRedirect("/api/v1/auth/oauth-success?token=" + token);
+            String accessToken = jwtService.generateAccessToken(userDetails);
+            String refreshToken = refreshTokenService.createRefreshToken(userDetails.getId()).getToken();
+
+            response.sendRedirect("/api/v1/auth/oauth-success?token="+accessToken+"&refreshToken="+refreshToken);
 
             /*// Redirigir al frontend web con el token como parámetro
-            response.sendRedirect("http://localhost:5173/oauth-success?token=" + token);*/
+            response.sendRedirect("http://localhost:5173/oauth-success?token="+accessToken+
+                    "&refreshToken="+refreshToken);*/
         };
     }
 
@@ -85,12 +90,28 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth ->auth
+                        // Endpoints de Swagger
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-resources/**",
+                                "/webjars/**",
+                                "/swagger-ui.html",
+                                "/swagger-ui/index.html"
+                        ).permitAll()
+
                         // Endpoints de autenticación
-                        .requestMatchers("/login", "/oauth2/**", "/api/v1/auth/oauth-success").permitAll()
-                        .requestMatchers(HttpMethod.POST,"/api/v1/auth/google-login").permitAll()
+                        .requestMatchers(
+                                "/login",
+                                "/oauth2/**",
+                                "/api/v1/auth/oauth-success").permitAll()
+                        .requestMatchers("/api/v1/auth/login/otp/**").permitAll()
+                        .requestMatchers(HttpMethod.POST,"/api/v1/auth/google").permitAll()
                         .requestMatchers(HttpMethod.POST,"/api/v1/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST,"/api/v1/auth/signup").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/refresh").permitAll()
                         .requestMatchers(HttpMethod.GET,"/api/v1/auth/me").authenticated()
+                        .requestMatchers("/api/v1/auth/google/**").authenticated()
 
                         // Endpoints de posts,categories,tags,roles,users
                         .requestMatchers(HttpMethod.GET,"/api/v1/roles/**").hasRole("ADMIN")

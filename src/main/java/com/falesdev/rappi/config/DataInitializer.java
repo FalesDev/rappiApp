@@ -1,5 +1,6 @@
 package com.falesdev.rappi.config;
 
+import com.falesdev.rappi.domain.LoginType;
 import com.falesdev.rappi.domain.document.Role;
 import com.falesdev.rappi.domain.document.User;
 import com.falesdev.rappi.repository.RoleRepository;
@@ -31,8 +32,10 @@ public class DataInitializer {
             Role restaurantOwnerRole = createRoleIfNotFound("RESTAURANT_OWNER");
             Role adminRole = createRoleIfNotFound("ADMIN");
 
-            createUserIfNotFound("admin@test.com", "Admin User", "adminpassword", adminRole);
-            createUserIfNotFound("user@test.com", "Test User", "password", customerRole);
+            createUserIfNotFound("admin@test.com", "Admin User",
+                    "adminpassword", "+51123456789",adminRole);
+            createUserIfNotFound("user@test.com", "Test User",
+                    "password","+51123456780",customerRole);
         };
     }
 
@@ -49,7 +52,7 @@ public class DataInitializer {
     }
 
     private void createUserIfNotFound(String email, String name,
-                                      String rawPassword, Role role) {
+                                      String rawPassword, String phone, Role role) {
         userRepository.findByEmail(email).orElseGet(() -> {
             log.info("Creating user: {}", email);
             return userRepository.save(
@@ -57,7 +60,10 @@ public class DataInitializer {
                             .email(email)
                             .name(name)
                             .password(passwordEncoder.encode(rawPassword))
+                            .phone(phone)
+                            .phoneVerified(true)
                             .role(role)
+                            .loginType(LoginType.LOCAL)
                             .build()
             );
         });

@@ -2,7 +2,7 @@ package com.falesdev.rappi.security;
 
 import com.falesdev.rappi.domain.document.User;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import java.util.HashMap;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,13 +14,24 @@ import java.util.Collections;
 import java.util.Map;
 
 @Getter
-@RequiredArgsConstructor
 public class RappiUserDetails implements UserDetails, OAuth2User {
 
     private final User user;
     private final Map<String, Object> attributes;
 
-    // Métodos de UserDetails
+    // Builder for local users (without OAuth2)
+    public RappiUserDetails(User user) {
+        this.user = user;
+        this.attributes = new HashMap<>();
+    }
+
+    // Constructor for OAuth2
+    public RappiUserDetails(User user, Map<String, Object> attributes) {
+        this.user = user;
+        this.attributes = attributes;
+    }
+
+    // UserDetails Methods
     @Override
     public String getUsername() {
         return user.getEmail();
@@ -51,7 +62,7 @@ public class RappiUserDetails implements UserDetails, OAuth2User {
         return true;
     }
 
-    // Métodos de OAuth2User
+    // OAuth2User Methods
     @Override
     public Map<String, Object> getAttributes() {
         return this.attributes;
@@ -67,6 +78,10 @@ public class RappiUserDetails implements UserDetails, OAuth2User {
     @Override
     public String getName() {
         return user.getEmail();
+    }
+
+    public String getPhone() {
+        return user.getPhone();
     }
 
     public String getId() {

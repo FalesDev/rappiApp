@@ -1,10 +1,7 @@
 package com.falesdev.rappi.domain.dto.request;
 
 import com.falesdev.rappi.domain.LoginType;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -29,6 +26,11 @@ public class UpdateUserRequestDto {
 
     @NotBlank(message = "Name is required")
     private String name;
+
+    @Pattern(regexp = "^\\+?[0-9]{7,15}$", message = "Phone number must be valid")
+    private String phone;
+
+    private boolean phoneVerified;
 
     @NotNull(message = "Role is required")
     private String roleId;

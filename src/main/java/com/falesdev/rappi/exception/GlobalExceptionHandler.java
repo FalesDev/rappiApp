@@ -22,7 +22,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(DocumentNotFoundException.class)
-    public ResponseEntity<ApiErrorResponse> handleEntityNotFoundException(DocumentNotFoundException ex){
+    public ResponseEntity<ApiErrorResponse> handleDocumentNotFoundException(DocumentNotFoundException ex){
         log.error("Document not found: {}", ex.getMessage());
         ApiErrorResponse error = ApiErrorResponse.builder()
                 .status(HttpStatus.NOT_FOUND.value())
@@ -76,5 +76,61 @@ public class GlobalExceptionHandler {
                 .build();
 
         return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(InvalidRefreshTokenException.class)
+    public ResponseEntity<ApiErrorResponse> handleInvalidRefreshTokenException(InvalidRefreshTokenException ex) {
+        log.error("Invalid refresh token: {}", ex.getMessage());
+
+        ApiErrorResponse error = ApiErrorResponse.builder()
+                .status(HttpStatus.UNAUTHORIZED.value())
+                .message(ex.getMessage())
+                .build();
+
+        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(OtpInvalidException.class)
+    public ResponseEntity<ApiErrorResponse> handleOtpInvalidException(OtpInvalidException ex) {
+        log.warn("Invalid OTP attempt: {}", ex.getMessage());
+
+        ApiErrorResponse error = ApiErrorResponse.builder()
+                .status(HttpStatus.UNAUTHORIZED.value())
+                .message(ex.getMessage())
+                .build();
+
+        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(AuthenticationMethodConflictException.class)
+    public ResponseEntity<ApiErrorResponse> handleAuthMethodConflict(AuthenticationMethodConflictException ex) {
+        ApiErrorResponse error = ApiErrorResponse.builder()
+                .status(HttpStatus.CONFLICT.value())
+                .message(ex.getMessage())
+                .build();
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ApiErrorResponse> handleBadRequest(BadRequestException ex) {
+        log.warn("Bad request: {}", ex.getMessage());
+        return ResponseEntity.badRequest().body(
+                ApiErrorResponse.builder()
+                        .status(HttpStatus.BAD_REQUEST.value())
+                        .message(ex.getMessage())
+                        .build()
+        );
+    }
+
+    @ExceptionHandler(EmailException.class)
+    public ResponseEntity<ApiErrorResponse> handleEmailException(EmailException ex) {
+        log.error("Mail service error: {}", ex.getMessage());
+
+        ApiErrorResponse error = ApiErrorResponse.builder()
+                .status(HttpStatus.BAD_GATEWAY.value())
+                .message("Error sending email")
+                .build();
+
+        return new ResponseEntity<>(error, HttpStatus.BAD_GATEWAY);
     }
 }

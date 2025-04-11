@@ -28,6 +28,10 @@ public class User {
 
     private String password;
     private String name;
+    @Indexed(unique = true)
+    private String phone;
+    @Builder.Default
+    private boolean phoneVerified = false;
 
     private Role role;
     private String imageURL;

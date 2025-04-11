@@ -37,7 +37,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         if ("google".equalsIgnoreCase(provider)) {
             return (String) attributes.get("email");
         }
-        throw new OAuth2AuthenticationException("Proveedor no soportado");
+        throw new OAuth2AuthenticationException("Provider not supported");
     }
 
     private String getNameFromAttributes(Map<String, Object> attributes, String provider) {
