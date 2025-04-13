@@ -24,7 +24,7 @@ public class AuthController {
     private final JwtService jwtService;
     private  final RefreshTokenService refreshTokenService;
 
-    @PostMapping("/login/otp/request")
+    @PostMapping("/login/otp")
     public ResponseEntity<Void> requestOtp(@Valid @RequestBody OtpRequest request) {
         authenticationService.sendOtp(request.identifier());
         return ResponseEntity.ok().build();
@@ -38,14 +38,6 @@ public class AuthController {
         ));
     }
 
-    @PostMapping(path = "/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest loginRequest){
-        return ResponseEntity.ok(authenticationService.authenticate(
-                loginRequest.getEmail(),
-                loginRequest.getPassword()
-        ));
-    }
-
     @GetMapping("/me")
     public ResponseEntity<AuthUser> getUserProfile(
             @AuthenticationPrincipal RappiUserDetails userDetails // ✅
@@ -53,10 +45,10 @@ public class AuthController {
         return ResponseEntity.ok(authenticationService.getUserProfile(userDetails));
     }
 
-    @PostMapping("/signup")
+    /*@PostMapping("/signup")
     public ResponseEntity<AuthResponse> signup(@Valid @RequestBody SignupRequest signupRequest) {
         return ResponseEntity.ok(authenticationService.register(signupRequest));
-    }
+    }*/
 
     //This will be removed later because the token will be redirected to the frontend
     @GetMapping("/oauth-success")

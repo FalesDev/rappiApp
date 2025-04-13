@@ -8,7 +8,7 @@ import com.falesdev.rappi.domain.document.Role;
 import com.falesdev.rappi.domain.document.User;
 import com.falesdev.rappi.exception.DocumentNotFoundException;
 import com.falesdev.rappi.mapper.UserMapper;
-import com.falesdev.rappi.repository.UserRepository;
+import com.falesdev.rappi.repository.mongo.UserRepository;
 import com.falesdev.rappi.service.RoleService;
 import com.falesdev.rappi.service.UserService;
 import lombok.RequiredArgsConstructor;

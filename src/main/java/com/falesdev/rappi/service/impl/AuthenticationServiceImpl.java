@@ -13,9 +13,9 @@ import com.falesdev.rappi.exception.DocumentNotFoundException;
 import com.falesdev.rappi.exception.EmailAlreadyExistsException;
 import com.falesdev.rappi.exception.OtpInvalidException;
 import com.falesdev.rappi.mapper.RoleMapper;
-import com.falesdev.rappi.repository.OtpRepository;
-import com.falesdev.rappi.repository.RoleRepository;
-import com.falesdev.rappi.repository.UserRepository;
+import com.falesdev.rappi.repository.redis.OtpRepository;
+import com.falesdev.rappi.repository.mongo.RoleRepository;
+import com.falesdev.rappi.repository.mongo.UserRepository;
 import com.falesdev.rappi.security.RappiUserDetails;
 import com.falesdev.rappi.security.auth.GoogleTokenValidator;
 import com.falesdev.rappi.security.service.OAuth2UserManagementService;
@@ -26,8 +26,6 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -44,7 +42,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
 
-    private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
     private final JwtService jwtService;
     private final UserRepository userRepository;
@@ -83,7 +80,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     @Transactional
     public AuthResponse validateOtp(String identifier, String otpCode) {
-        Otp otp = otpRepository.findByKey(identifier)
+        Otp otp = otpRepository.findById(identifier)
                 .orElseThrow(() -> new OtpInvalidException("OTP inválido o expirado"));
 
         if (!otp.getCode().equals(otpCode)) {
@@ -104,26 +101,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         String accessToken = jwtService.generateAccessToken(userDetails);
         String refreshToken = refreshTokenService.createRefreshToken(user.getId()).getToken();
-        long expiresIn = jwtService.getExpirationTime(accessToken);
-
-        return AuthResponse.builder()
-                .token(accessToken)
-                .refreshToken(refreshToken)
-                .expiresIn(expiresIn)
-                .build();
-    }
-
-    @Override
-    @Transactional
-    public AuthResponse authenticate(String email, String password) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(email,password)
-        );
-        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-        RappiUserDetails rappiUser = (RappiUserDetails) userDetails;
-
-        String accessToken = jwtService.generateAccessToken(userDetails);
-        String refreshToken = refreshTokenService.createRefreshToken(rappiUser.getId()).getToken();
         long expiresIn = jwtService.getExpirationTime(accessToken);
 
         return AuthResponse.builder()

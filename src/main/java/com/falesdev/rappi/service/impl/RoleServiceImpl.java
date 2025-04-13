@@ -4,7 +4,7 @@ import com.falesdev.rappi.domain.dto.RoleDto;
 import com.falesdev.rappi.domain.document.Role;
 import com.falesdev.rappi.exception.DocumentNotFoundException;
 import com.falesdev.rappi.mapper.RoleMapper;
-import com.falesdev.rappi.repository.RoleRepository;
+import com.falesdev.rappi.repository.mongo.RoleRepository;
 import com.falesdev.rappi.service.RoleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

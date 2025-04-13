@@ -11,7 +11,6 @@ public interface AuthenticationService {
 
     void sendOtp(String identifier);
     AuthResponse validateOtp(String identifier, String otpCode);
-    AuthResponse authenticate(String email, String password);
     AuthResponse register(SignupRequest signupRequest);
     UserDetails validateToken(String token);
     AuthUser getUserProfile(RappiUserDetails userDetails);

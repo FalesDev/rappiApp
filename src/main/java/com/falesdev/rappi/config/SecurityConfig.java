@@ -1,7 +1,7 @@
 package com.falesdev.rappi.config;
 
 import com.falesdev.rappi.domain.dto.ApiErrorResponse;
-import com.falesdev.rappi.repository.UserRepository;
+import com.falesdev.rappi.repository.mongo.UserRepository;
 import com.falesdev.rappi.security.auth.JwtAuthenticationFilter;
 import com.falesdev.rappi.security.RappiUserDetails;
 import com.falesdev.rappi.security.service.RappiUserDetailsService;
@@ -71,7 +71,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of(
-                "https://cyberblog-latest.onrender.com",
+                "https://rappiapp-latest-f1lw.onrender.com",
                 "https://cyber-blog-fawn.vercel.app",
                 "http://localhost:5173"
         ));
@@ -105,9 +105,8 @@ public class SecurityConfig {
                                 "/login",
                                 "/oauth2/**",
                                 "/api/v1/auth/oauth-success").permitAll()
-                        .requestMatchers("/api/v1/auth/login/otp/**").permitAll()
+                        .requestMatchers("/api/v1/auth/login/**").permitAll()
                         .requestMatchers(HttpMethod.POST,"/api/v1/auth/google").permitAll()
-                        .requestMatchers(HttpMethod.POST,"/api/v1/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST,"/api/v1/auth/signup").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/refresh").permitAll()
                         .requestMatchers(HttpMethod.GET,"/api/v1/auth/me").authenticated()
