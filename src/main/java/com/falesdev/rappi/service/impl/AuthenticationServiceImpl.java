@@ -81,7 +81,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Transactional
     public AuthResponse validateOtp(String identifier, String otpCode) {
         Otp otp = otpRepository.findById(identifier)
-                .orElseThrow(() -> new OtpInvalidException("OTP inválido o expirado"));
+                .orElseThrow(() -> new OtpInvalidException("OTP invalid or expired"));
 
         if (!otp.getCode().equals(otpCode)) {
             throw new OtpInvalidException("OTP incorrect");

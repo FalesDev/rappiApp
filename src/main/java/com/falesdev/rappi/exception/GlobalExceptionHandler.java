@@ -1,6 +1,7 @@
 package com.falesdev.rappi.exception;
 
 import com.falesdev.rappi.domain.dto.ApiErrorResponse;
+import io.lettuce.core.RedisCommandTimeoutException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -132,5 +133,17 @@ public class GlobalExceptionHandler {
                 .build();
 
         return new ResponseEntity<>(error, HttpStatus.BAD_GATEWAY);
+    }
+
+    @ExceptionHandler(RedisCommandTimeoutException.class)
+    public ResponseEntity<ApiErrorResponse> handleRedisTimeout(RedisCommandTimeoutException ex) {
+        log.warn("Redis timeout: {}", ex.getMessage());
+
+        ApiErrorResponse error = ApiErrorResponse.builder()
+                .status(HttpStatus.GATEWAY_TIMEOUT.value())
+                .message("Redis service is temporarily unavailable. Please try again.")
+                .build();
+
+        return new ResponseEntity<>(error, HttpStatus.GATEWAY_TIMEOUT);
     }
 }
