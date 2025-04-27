@@ -71,9 +71,10 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of(
-                "https://rappiapp-latest-f1lw.onrender.com",
+                "https://rappiapp-xzjeh.ondigitalocean.app",
                 "https://cyber-blog-fawn.vercel.app",
-                "http://localhost:5173"
+                "http://localhost:5173",
+                "http://localhost:4200"
         ));
         config.setAllowedMethods(List.of("*"));
         config.setAllowedHeaders(List.of("*"));
