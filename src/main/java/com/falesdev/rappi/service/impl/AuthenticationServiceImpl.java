@@ -93,15 +93,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         User user = identifier.contains("@")
                 ? userRepository.findByEmail(identifier)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"))
+                .orElseThrow(() -> new DocumentNotFoundException("User not found"))
                 : userRepository.findByPhone(identifier)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() -> new DocumentNotFoundException("User not found"));
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+        RappiUserDetails userDetails = new RappiUserDetails(user);
 
         String accessToken = jwtService.generateAccessToken(userDetails);
         String refreshToken = refreshTokenService.createRefreshToken(user.getId()).getToken();
-        long expiresIn = jwtService.getExpirationTime(accessToken);
+        long expiresIn = jwtService.getExpirationTime(accessToken) / 1000;
+
 
         return AuthResponse.builder()
                 .token(accessToken)
@@ -131,7 +132,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(newUser.getEmail());
         String token = jwtService.generateAccessToken(userDetails);
-        long expiresIn = jwtService.getExpirationTime(token);
+        long expiresIn = jwtService.getExpirationTime(token) / 1000;
 
         return AuthResponse.builder()
                 .token(token)
@@ -190,7 +191,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         RappiUserDetails userDetails = new RappiUserDetails(user, attributes);
         String accessToken  = jwtService.generateAccessToken(userDetails);
         String refreshToken = refreshTokenService.createRefreshToken(user.getId()).getToken();
-        long expiresIn = jwtService.getExpirationTime(accessToken);
+        long expiresIn = jwtService.getExpirationTime(accessToken) / 1000;
 
         boolean requiresPhone = user.getPhone() == null || !user.isPhoneVerified();
 
@@ -234,10 +235,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         user.setPhoneVerified(true);
         userRepository.save(user);
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+        RappiUserDetails userDetails = new RappiUserDetails(user);
+
         String accessToken = jwtService.generateAccessToken(userDetails);
         String refreshToken = refreshTokenService.createRefreshToken(user.getId()).getToken();
-        long expiresIn = jwtService.getExpirationTime(accessToken);
+        long expiresIn = jwtService.getExpirationTime(accessToken) / 1000;
 
         return AuthResponse.builder()
                 .token(accessToken)

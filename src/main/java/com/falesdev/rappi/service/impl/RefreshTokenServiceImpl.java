@@ -51,8 +51,9 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         return refreshTokenRepository.findByToken(refreshToken)
                 .map(token -> {
                     refreshTokenRepository.delete(token);
+                    refreshTokenRepository.deleteByUserId(token.getUserId());
 
-                    User user = userRepository.findById(token.getId())
+                    User user = userRepository.findById(token.getUserId())
                             .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
                     UserDetails userDetails = new RappiUserDetails(user);
@@ -63,13 +64,16 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                             .userId(user.getId())
                             .token(newRefreshToken)
                             .expiryDate(Instant.now().plusMillis(jwtService.getRefreshExpirationMs()))
+                            .revoked(false)
                             .build();
                     refreshTokenRepository.save(newToken);
+
+                    long expiresIn = jwtService.getJwtExpirationMs() / 1000;
 
                     return AuthResponse.builder()
                             .token(newAccessToken)
                             .refreshToken(newToken.getToken())
-                            .expiresIn(jwtService.getJwtExpirationMs())
+                            .expiresIn(expiresIn)
                             .build();
                 })
                 .orElseThrow(() -> new InvalidRefreshTokenException("Invalid refresh token"));

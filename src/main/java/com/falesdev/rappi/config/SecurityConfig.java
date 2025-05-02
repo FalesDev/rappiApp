@@ -74,7 +74,8 @@ public class SecurityConfig {
                 "https://rappiapp-xzjeh.ondigitalocean.app",
                 "https://cyber-blog-fawn.vercel.app",
                 "http://localhost:5173",
-                "http://localhost:4200"
+                "http://localhost:4200",
+                "http://10.0.2.2:8080"
         ));
         config.setAllowedMethods(List.of("*"));
         config.setAllowedHeaders(List.of("*"));
