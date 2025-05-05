@@ -25,10 +25,11 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         Map<String, Object> attributes = oAuth2User.getAttributes();
 
         String email = getEmailFromAttributes(attributes, provider);
-        String name = getNameFromAttributes(attributes, provider);
+        String firstName = getFirstNameFromAttributes(attributes, provider);
+        String lastName = getLastNameFromAttributes(attributes, provider);
         String picture = getPictureFromAttributes(attributes, provider);
 
-        User user = oauth2UserService.createOrUpdateOAuth2User(email, name, picture, provider);
+        User user = oauth2UserService.createOrUpdateOAuth2User(email, firstName, lastName, picture, provider);
 
         return new RappiUserDetails(user,attributes);
     }
@@ -40,11 +41,18 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         throw new OAuth2AuthenticationException("Provider not supported");
     }
 
-    private String getNameFromAttributes(Map<String, Object> attributes, String provider) {
+    private String getFirstNameFromAttributes(Map<String, Object> attributes, String provider) {
         if ("google".equalsIgnoreCase(provider)) {
-            return (String) attributes.get("name");
+            return (String) attributes.get("given_name");
         }
-        return "Usuario";
+        return null;
+    }
+
+    private String getLastNameFromAttributes(Map<String, Object> attributes, String provider) {
+        if ("google".equalsIgnoreCase(provider)) {
+            return (String) attributes.get("family_name");
+        }
+        return null;
     }
 
     private String getPictureFromAttributes(Map<String, Object> attributes, String provider) {

@@ -1,12 +1,15 @@
 package com.falesdev.rappi.domain.dto.request;
 
-import com.falesdev.rappi.domain.LoginType;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.URL;
+
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @Builder
@@ -22,11 +25,25 @@ public class CreateUserRequestDto {
     @NotBlank(message = "Password is required")
     private String password;
 
-    @NotBlank(message = "Name is required")
-    private String name;
+    @NotBlank(message = "FirstName is required")
+    private String firstName;
 
-    @Pattern(regexp = "^\\+?[0-9]{7,15}$", message = "Phone number must be valid")
+    @NotBlank(message = "LastName is required")
+    private String lastName;
+
+    private String nickname;
+
+    @NotBlank(message = "DNI is mandatory")
+    @Pattern(
+            regexp = "^[1-9]\\d{7}$",
+            message = "DNI must have 8 numeric digits (1-9)"
+    )
+    private String dni;
+
+    @Pattern(regexp = "^\\+[0-9]{6,14}[0-9]$", message = "Phone number must be valid")
     private String phone;
+
+    private LocalDateTime birthday;
 
     private boolean phoneVerified;
 
@@ -35,4 +52,7 @@ public class CreateUserRequestDto {
 
     @URL(protocol = "https", message = "Must be a valid HTTPS URL")
     private String imageURL;
+
+    @Builder.Default
+    private Set<String> addresses = new HashSet<>();
 }

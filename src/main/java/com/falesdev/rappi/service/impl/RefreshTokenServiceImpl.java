@@ -3,6 +3,7 @@ package com.falesdev.rappi.service.impl;
 import com.falesdev.rappi.domain.document.RefreshToken;
 import com.falesdev.rappi.domain.document.User;
 import com.falesdev.rappi.domain.dto.AuthResponse;
+import com.falesdev.rappi.exception.DocumentNotFoundException;
 import com.falesdev.rappi.exception.InvalidRefreshTokenException;
 import com.falesdev.rappi.repository.mongo.RefreshTokenRepository;
 import com.falesdev.rappi.repository.mongo.UserRepository;
@@ -11,7 +12,6 @@ import com.falesdev.rappi.service.JwtService;
 import com.falesdev.rappi.service.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,7 +54,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                     refreshTokenRepository.deleteByUserId(token.getUserId());
 
                     User user = userRepository.findById(token.getUserId())
-                            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                            .orElseThrow(() -> new DocumentNotFoundException("User not found"));
 
                     UserDetails userDetails = new RappiUserDetails(user);
                     String newAccessToken = jwtService.generateAccessToken(userDetails);

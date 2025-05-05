@@ -1,6 +1,6 @@
 package com.falesdev.rappi.service.impl;
 
-import com.falesdev.rappi.domain.LoginType;
+import com.falesdev.rappi.domain.RegisterType;
 import com.falesdev.rappi.domain.dto.UserDto;
 import com.falesdev.rappi.domain.dto.request.CreateUserRequestDto;
 import com.falesdev.rappi.domain.dto.request.UpdateUserRequestDto;
@@ -47,13 +47,13 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserDto createUser(CreateUserRequestDto userRequestDto) {
         if (userRepository.existsByEmailIgnoreCase(userRequestDto.getEmail())){
-            throw new IllegalArgumentException("User already exists with email: " + userRequestDto.getName());
+            throw new IllegalArgumentException("User already exists with email: " + userRequestDto.getFirstName());
         }
 
         User newUser = userMapper.toCreateUser(userRequestDto);
         newUser.setPassword(passwordEncoder.encode(userRequestDto.getPassword()));
         newUser.setRole(roleService.getRoleById(userRequestDto.getRoleId()));
-        newUser.setLoginType(LoginType.LOCAL);
+        newUser.setRegisterType(RegisterType.LOCAL);
 
         User savedUser = userRepository.save(newUser);
         return userMapper.toDto(savedUser);

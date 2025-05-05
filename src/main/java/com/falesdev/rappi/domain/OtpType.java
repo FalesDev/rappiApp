@@ -1,5 +1,5 @@
 package com.falesdev.rappi.domain;
 
 public enum OtpType {
-    LOGIN, PHONE_VERIFICATION
+    LOGIN_EMAIL,LOGIN_PHONE, REGISTER_GOOGLE
 }

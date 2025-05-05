@@ -1,6 +1,6 @@
 package com.falesdev.rappi.security.service;
 
-import com.falesdev.rappi.domain.LoginType;
+import com.falesdev.rappi.domain.RegisterType;
 import com.falesdev.rappi.domain.document.Role;
 import com.falesdev.rappi.domain.document.User;
 import com.falesdev.rappi.exception.AuthenticationMethodConflictException;
@@ -18,11 +18,12 @@ public class OAuth2UserManagementService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
 
-    public User createOrUpdateOAuth2User(String email, String name, String picture, String provider) {
+    public User createOrUpdateOAuth2User(
+            String email, String firstName, String lastName, String picture, String provider) {
 
-        LoginType loginType;
+        RegisterType registerType;
         try {
-            loginType = LoginType.valueOf(provider.toUpperCase());
+            registerType = RegisterType.valueOf(provider.toUpperCase());
         } catch (IllegalArgumentException ex) {
             throw new BadRequestException("Unsupported OAuth2 provider: " + provider);
         }
@@ -32,20 +33,23 @@ public class OAuth2UserManagementService {
 
         return userRepository.findByEmail(email)
                 .map(existingUser -> {
-                    if (existingUser.getLoginType() != loginType) {
-                        throw new AuthenticationMethodConflictException("Account registered with " + existingUser.getLoginType());
+                    if (existingUser.getRegisterType() != registerType) {
+                        throw new AuthenticationMethodConflictException("Account registered with "
+                                + existingUser.getRegisterType());
                     }
-                    existingUser.setName(name);
+                    existingUser.setFirstName(firstName);
+                    existingUser.setLastName(lastName);
                     existingUser.setImageURL(picture);
                     return userRepository.save(existingUser);
                 })
                 .orElseGet(() -> userRepository.save(
                         User.builder()
                                 .email(email)
-                                .name(name)
+                                .firstName(firstName)
+                                .lastName(lastName)
                                 .imageURL(picture)
                                 .role(defaultRole)
-                                .loginType(loginType)
+                                .registerType(registerType)
                                 .phoneVerified(false)
                                 .password(null)
                                 .build()

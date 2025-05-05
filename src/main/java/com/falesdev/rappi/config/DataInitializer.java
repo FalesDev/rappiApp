@@ -1,6 +1,6 @@
 package com.falesdev.rappi.config;
 
-import com.falesdev.rappi.domain.LoginType;
+import com.falesdev.rappi.domain.RegisterType;
 import com.falesdev.rappi.domain.document.Role;
 import com.falesdev.rappi.domain.document.User;
 import com.falesdev.rappi.repository.mongo.RoleRepository;
@@ -51,19 +51,19 @@ public class DataInitializer {
                 });
     }
 
-    private void createUserIfNotFound(String email, String name,
+    private void createUserIfNotFound(String email, String firstName,
                                       String rawPassword, String phone, Role role) {
         userRepository.findByEmail(email).orElseGet(() -> {
             log.info("Creating user: {}", email);
             return userRepository.save(
                     User.builder()
                             .email(email)
-                            .name(name)
+                            .firstName(firstName)
                             .password(passwordEncoder.encode(rawPassword))
                             .phone(phone)
                             .phoneVerified(true)
                             .role(role)
-                            .loginType(LoginType.LOCAL)
+                            .registerType(RegisterType.LOCAL)
                             .build()
             );
         });

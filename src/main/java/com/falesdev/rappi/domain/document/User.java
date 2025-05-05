@@ -1,6 +1,6 @@
 package com.falesdev.rappi.domain.document;
 
-import com.falesdev.rappi.domain.LoginType;
+import com.falesdev.rappi.domain.RegisterType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,6 +12,8 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Document(collection = "users")
 @Data
@@ -27,15 +29,25 @@ public class User {
     private String email;
 
     private String password;
-    private String name;
+    private String firstName;
+    private String lastName;
+    private String nickname;
+    private String dni;
+
     @Indexed(unique = true)
     private String phone;
+
+    private LocalDateTime birthday;
+
     @Builder.Default
     private boolean phoneVerified = false;
 
     private Role role;
     private String imageURL;
-    private LoginType loginType;
+    private RegisterType registerType;
+
+    @Builder.Default
+    private Set<String> addresses = new HashSet<>();
 
     @CreatedDate
     private LocalDateTime createdAt;
