@@ -1,6 +1,6 @@
 package com.falesdev.rappi.exception;
 
-import com.falesdev.rappi.domain.dto.ApiErrorResponse;
+import com.falesdev.rappi.domain.dto.response.ApiErrorResponse;
 import io.lettuce.core.RedisCommandTimeoutException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -28,7 +28,7 @@ public class GlobalExceptionHandler {
         log.error("Document not found: {}", ex.getMessage());
         ApiErrorResponse error = ApiErrorResponse.builder()
                 .status(HttpStatus.NOT_FOUND.value())
-                .message("Resource not found")
+                .message(ex.getMessage())
                 .build();
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
@@ -40,6 +40,33 @@ public class GlobalExceptionHandler {
                 .message("Email is already registered")
                 .build();
         return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(EmailNotExistsException.class)
+    public ResponseEntity<ApiErrorResponse> handleEmailNotExists(EmailNotExistsException ex) {
+        ApiErrorResponse error = ApiErrorResponse.builder()
+                .status(HttpStatus.NOT_FOUND.value())
+                .message("Email is not registered")
+                .build();
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(PhoneAlreadyExistsException.class)
+    public ResponseEntity<ApiErrorResponse> handlePhoneExists(PhoneAlreadyExistsException ex) {
+        ApiErrorResponse error = ApiErrorResponse.builder()
+                .status(HttpStatus.CONFLICT.value())
+                .message("Phone is already registered")
+                .build();
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(PhoneNotExistsException.class)
+    public ResponseEntity<ApiErrorResponse> handlePhoneNotExists(PhoneNotExistsException ex) {
+        ApiErrorResponse error = ApiErrorResponse.builder()
+                .status(HttpStatus.NOT_FOUND.value())
+                .message("Phone is not registered")
+                .build();
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(BadCredentialsException.class)

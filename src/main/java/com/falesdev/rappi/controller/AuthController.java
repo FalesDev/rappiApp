@@ -1,8 +1,9 @@
 package com.falesdev.rappi.controller;
 
-import com.falesdev.rappi.domain.dto.AuthResponse;
+import com.falesdev.rappi.domain.dto.response.AuthResponse;
 import com.falesdev.rappi.domain.dto.AuthUser;
 import com.falesdev.rappi.domain.dto.request.*;
+import com.falesdev.rappi.domain.dto.response.PhoneRegisterResponse;
 import com.falesdev.rappi.security.RappiUserDetails;
 import com.falesdev.rappi.service.AuthenticationService;
 import com.falesdev.rappi.service.JwtService;
@@ -22,29 +23,29 @@ public class AuthController {
     private final JwtService jwtService;
     private  final RefreshTokenService refreshTokenService;
 
-    @PostMapping("/login/phone")
-    public ResponseEntity<Void> requestPhoneOtp(@Valid @RequestBody PhoneRequest request) {
-        authenticationService.sendPhoneOtp(request.phone());
+    @PostMapping("/login/phone/otp")
+    public ResponseEntity<Void> sendLoginPhoneOtp(@Valid @RequestBody PhoneRequest request) {
+        authenticationService.sendLoginPhoneOtp(request.phone());
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/login/phone/validate")
-    public ResponseEntity<AuthResponse> validatePhoneOtp(@Valid @RequestBody PhoneValidationRequest request) {
-        return ResponseEntity.ok(authenticationService.validatePhoneOtp(
+    @PostMapping("/login/phone/otp/verify")
+    public ResponseEntity<AuthResponse> validateLoginPhoneOtp(@Valid @RequestBody PhoneValidationRequest request) {
+        return ResponseEntity.ok(authenticationService.validateLoginPhoneOtp(
                 request.phone(),
                 request.code()
         ));
     }
 
-    @PostMapping("/login/email")
-    public ResponseEntity<Void> requestEmailOtp(@Valid @RequestBody EmailRequest request) {
-        authenticationService.sendEmailOtp(request.email());
+    @PostMapping("/login/email/otp")
+    public ResponseEntity<Void> sendLoginEmailOtp(@Valid @RequestBody EmailRequest request) {
+        authenticationService.sendLoginEmailOtp(request.email());
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/login/email/validate")
-    public ResponseEntity<AuthResponse> validateEmailOtp(@Valid @RequestBody EmailValidationRequest request) {
-        return ResponseEntity.ok(authenticationService.validateEmailOtp(
+    @PostMapping("/login/email/otp/verify")
+    public ResponseEntity<AuthResponse> validateLoginEmailOtp(@Valid @RequestBody EmailValidationRequest request) {
+        return ResponseEntity.ok(authenticationService.validateLoginEmailOtp(
                 request.email(),
                 request.code()
         ));
@@ -70,10 +71,26 @@ public class AuthController {
                 .build());
     }
 
-    /*@PostMapping("/register/phone")
-    public ResponseEntity<AuthResponse> registerWithPhone(@Valid @RequestBody PhoneRequest request) {
-        return ResponseEntity.ok(authenticationService.registerWithPhone(request.phone()));
-    }*/
+    @PostMapping("/register/phone/otp")
+    public ResponseEntity<Void> sendRegisterPhoneOtp(@Valid @RequestBody PhoneRequest request) {
+        authenticationService.sendRegisterPhoneOtp(request.phone());
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/register/phone/otp/verify")
+    public ResponseEntity<PhoneRegisterResponse> validateRegisterPhoneOtp(
+            @Valid @RequestBody PhoneValidationRequest request
+    ) {
+        return ResponseEntity.ok(authenticationService.validateRegisterPhoneOtp(
+                request.phone(),
+                request.code()
+        ));
+    }
+
+    @PostMapping("/register/phone")
+    public ResponseEntity<AuthResponse> registerWithPhone(@Valid @RequestBody RegisterRequest request) {
+        return ResponseEntity.ok(authenticationService.registerWithPhone(request));
+    }
 
     //Receive the token sent to you by the front mobile
     @PostMapping("/register/google")
@@ -81,26 +98,27 @@ public class AuthController {
         return ResponseEntity.ok(authenticationService.registerWithGoogle(request.idToken()));
     }
 
-    @PostMapping("/register/google/phone")
-    public ResponseEntity<Void> sendGooglePhoneVerificationOtp(
+    @PostMapping("/register/google/phone/otp")
+    public ResponseEntity<Void> sendRegisterGooglePhoneOtp(
             @Valid @RequestBody PhoneRequest request,
             @AuthenticationPrincipal RappiUserDetails userDetails
     ) {
-        authenticationService.sendGooglePhoneVerificationOtp(
+        authenticationService.sendRegisterGooglePhoneOtp(
                 userDetails.getUser().getEmail(),
                 request.phone()
         );
         return ResponseEntity.accepted().build();
     }
 
-    @PostMapping("/register/google/phone/verify")
-    public ResponseEntity<AuthResponse> verifyGooglePhoneOtp(
-            @Valid @RequestBody OtpVerificationRequest request,
+    @PostMapping("/register/google/phone/otp/verify")
+    public ResponseEntity<AuthResponse> verifyRegisterGooglePhoneOtp(
+            @Valid @RequestBody PhoneValidationRequest request,
             @AuthenticationPrincipal RappiUserDetails userDetails
     ) {
-        AuthResponse response = authenticationService.verifyGooglePhoneOtp(
+        AuthResponse response = authenticationService.verifyRegisterGooglePhoneOtp(
                 userDetails.getUser().getEmail(),
-                request.otp()
+                request.phone(),
+                request.code()
         );
         return ResponseEntity.ok(response);
     }

@@ -2,7 +2,7 @@ package com.falesdev.rappi.service.impl;
 
 import com.falesdev.rappi.domain.document.RefreshToken;
 import com.falesdev.rappi.domain.document.User;
-import com.falesdev.rappi.domain.dto.AuthResponse;
+import com.falesdev.rappi.domain.dto.response.AuthResponse;
 import com.falesdev.rappi.exception.DocumentNotFoundException;
 import com.falesdev.rappi.exception.InvalidRefreshTokenException;
 import com.falesdev.rappi.repository.mongo.RefreshTokenRepository;

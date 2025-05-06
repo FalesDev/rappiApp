@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 @NoArgsConstructor
 public class Otp {
     @Id
-    private String key; // Email o teléfono
+    private String key;
     private String code;
     private OtpType type;
     private String target;
@@ -24,10 +24,14 @@ public class Otp {
     @TimeToLive(unit = TimeUnit.SECONDS)
     private Long ttl = 300L; // 5 minutos
 
-    public Otp(String key, String code,OtpType type,String target) {
-        this.key = key;
+    public Otp(String code, OtpType type, String target) {
+        this.key = generateKey(type, target);
         this.code = code;
         this.type = type;
         this.target = target;
+    }
+
+    private String generateKey(OtpType type, String target) {
+        return type.name() + ":" + target;
     }
 }

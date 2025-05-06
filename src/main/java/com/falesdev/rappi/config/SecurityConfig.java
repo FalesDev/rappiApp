@@ -1,6 +1,6 @@
 package com.falesdev.rappi.config;
 
-import com.falesdev.rappi.domain.dto.ApiErrorResponse;
+import com.falesdev.rappi.domain.dto.response.ApiErrorResponse;
 import com.falesdev.rappi.repository.mongo.UserRepository;
 import com.falesdev.rappi.security.auth.JwtAuthenticationFilter;
 import com.falesdev.rappi.security.RappiUserDetails;
@@ -108,11 +108,11 @@ public class SecurityConfig {
                                 "/oauth2/**",
                                 "/api/v1/auth/oauth-success").permitAll()
                         .requestMatchers("/api/v1/auth/login/**").permitAll()
-                        .requestMatchers(HttpMethod.POST,"/api/v1/auth/google").permitAll()
-                        .requestMatchers(HttpMethod.POST,"/api/v1/auth/signup").permitAll()
+                        .requestMatchers("/api/v1/auth/register/phone/**").permitAll()
+                        .requestMatchers(HttpMethod.POST,"/api/v1/auth/register/google").permitAll()
+                        .requestMatchers("/api/v1/auth/register/google/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/refresh").permitAll()
                         .requestMatchers(HttpMethod.GET,"/api/v1/auth/me").authenticated()
-                        .requestMatchers("/api/v1/auth/google/**").authenticated()
 
                         // Endpoints de posts,categories,tags,roles,users
                         .requestMatchers(HttpMethod.GET,"/api/v1/roles/**").hasRole("ADMIN")

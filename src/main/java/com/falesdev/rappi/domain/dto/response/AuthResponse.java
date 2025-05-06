@@ -1,4 +1,4 @@
-package com.falesdev.rappi.domain.dto;
+package com.falesdev.rappi.domain.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

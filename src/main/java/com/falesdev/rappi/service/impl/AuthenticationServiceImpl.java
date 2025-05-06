@@ -2,13 +2,14 @@ package com.falesdev.rappi.service.impl;
 
 import com.falesdev.rappi.domain.RegisterType;
 import com.falesdev.rappi.domain.OtpType;
-import com.falesdev.rappi.domain.dto.AuthResponse;
+import com.falesdev.rappi.domain.document.Role;
+import com.falesdev.rappi.domain.dto.request.RegisterRequest;
+import com.falesdev.rappi.domain.dto.response.AuthResponse;
 import com.falesdev.rappi.domain.dto.AuthUser;
+import com.falesdev.rappi.domain.dto.response.PhoneRegisterResponse;
 import com.falesdev.rappi.domain.redis.Otp;
 import com.falesdev.rappi.domain.document.User;
-import com.falesdev.rappi.exception.BadRequestException;
-import com.falesdev.rappi.exception.DocumentNotFoundException;
-import com.falesdev.rappi.exception.OtpInvalidException;
+import com.falesdev.rappi.exception.*;
 import com.falesdev.rappi.mapper.RoleMapper;
 import com.falesdev.rappi.repository.redis.OtpRepository;
 import com.falesdev.rappi.repository.mongo.RoleRepository;
@@ -26,7 +27,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -43,7 +43,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final JwtService jwtService;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
-    private final PasswordEncoder passwordEncoder;
     private final GoogleTokenValidator googleTokenValidator;
     private final OAuth2UserManagementService oAuth2UserManagementService;
     private final RefreshTokenService refreshTokenService;
@@ -54,33 +53,46 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final SmsService smsService;
 
     @Override
-    public void sendPhoneOtp(String phone) {
-        validateUserExistsByPhone(phone);
+    public void sendLoginPhoneOtp(String phone) {
         String otpCode = generateOtp();
-        otpRepository.save(new Otp(phone, otpCode, OtpType.LOGIN_PHONE,phone));
+        otpRepository.save(new Otp(otpCode, OtpType.LOGIN_PHONE,phone));
         smsService.sendOtpSms(phone, otpCode);
     }
 
     @Override
     @Transactional
-    public AuthResponse validatePhoneOtp(String phone, String otpCode) {
-        User user = validateOtpAndGetUser(phone, otpCode);
+    public AuthResponse validateLoginPhoneOtp(String phone, String otpCode) {
+        validateGlobalOtp(otpCode, OtpType.LOGIN_PHONE, phone);
+
+        if (!userRepository.existsByPhone(phone)) {
+            throw new PhoneNotExistsException("Phone is not registered");
+        }
+
+        User user = userRepository.findByPhone(phone)
+                .orElseThrow(() -> new DocumentNotFoundException("User not found"));
+
         return generateAuthResponse(user);
     }
 
     @Override
-    public void sendEmailOtp(String email) {
-        validateUserExistsByEmail(email);
+    public void sendLoginEmailOtp(String email) {
+        validateEmailExists(email);
         String otpCode = generateOtp();
-        otpRepository.save(new Otp(email, otpCode, OtpType.LOGIN_EMAIL,email));
+        otpRepository.save(new Otp(otpCode, OtpType.LOGIN_EMAIL,email));
         emailService.sendOtpEmail(email, otpCode);
     }
 
-
     @Override
     @Transactional
-    public AuthResponse validateEmailOtp(String email, String otpCode) {
-        User user = validateOtpAndGetUser(email, otpCode);
+    public AuthResponse validateLoginEmailOtp(String email, String otpCode) {
+        validateGlobalOtp(otpCode, OtpType.LOGIN_EMAIL, email);
+
+        if (!userRepository.existsByEmailIgnoreCase(email)) {
+            throw new EmailNotExistsException("Email is not registered");
+        }
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new DocumentNotFoundException("User not found"));
         return generateAuthResponse(user);
     }
 
@@ -111,34 +123,54 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         );
     }
 
-    /*@Override
+    @Override
+    public void sendRegisterPhoneOtp(String phone) {
+        String otpCode = generateOtp();
+        otpRepository.save(new Otp(otpCode, OtpType.REGISTER_PHONE,phone));
+        smsService.sendOtpSms(phone, otpCode);
+    }
+
+    @Override
     @Transactional
-    public AuthResponse registerWithPhone(String phone) {
-        if (userRepository.existsByEmailIgnoreCase(signupRequest.getEmail())) {
-            throw new EmailAlreadyExistsException("Email already in use");
+    public PhoneRegisterResponse validateRegisterPhoneOtp(String phone, String otpCode) {
+        validateGlobalOtp(otpCode, OtpType.REGISTER_PHONE, phone);
+        Boolean isRegistered = userRepository.existsByPhone(phone);
+
+        return PhoneRegisterResponse.builder()
+                .phone(phone)
+                .isRegistered(isRegistered)
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public AuthResponse registerWithPhone(RegisterRequest registerRequest) {
+        if (userRepository.existsByEmailIgnoreCase(registerRequest.email())) {
+            throw new EmailAlreadyExistsException("Email is already registered");
+        }
+
+        if(userRepository.existsByPhone(registerRequest.phone())) {
+            throw new PhoneAlreadyExistsException("Phone is already registered");
         }
 
         Role userRole = roleRepository.findByName("CUSTOMER")
                 .orElseThrow(() -> new DocumentNotFoundException("Role CUSTOMER not found"));
 
         User newUser = User.builder()
-                .name(signupRequest.getName())
-                .email(signupRequest.getEmail())
-                .password(passwordEncoder.encode(signupRequest.getPassword()))
+                .email(registerRequest.email())
+                .password(null)
+                .firstName(registerRequest.firstName())
+                .lastName(registerRequest.lastName())
+                .phone(registerRequest.phone())
+                .phoneVerified(true)
                 .role(userRole)
+                .registerType(RegisterType.PHONE)
                 .build();
 
         userRepository.save(newUser);
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(newUser.getEmail());
-        String token = jwtService.generateAccessToken(userDetails);
-        long expiresIn = jwtService.getExpirationTime(token) / 1000;
-
-        return AuthResponse.builder()
-                .token(token)
-                .expiresIn(expiresIn)
-                .build();
-    }*/
+        return generateAuthResponse(newUser);
+    }
 
     @Override
     @Transactional
@@ -181,82 +213,50 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public void sendGooglePhoneVerificationOtp(String email, String phone) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new DocumentNotFoundException("User not found"));
-
-        if (user.getRegisterType() != RegisterType.GOOGLE) {
-            throw new BadRequestException("Only Google users can verify phone");
-        }
-
+    public void sendRegisterGooglePhoneOtp(String email, String phone) {
         String otpCode = generateOtp();
-        otpRepository.save(new Otp(email, otpCode, OtpType.REGISTER_GOOGLE,phone));
-
+        otpRepository.save(new Otp(otpCode, OtpType.REGISTER_GOOGLE,phone));
         smsService.sendOtpSms(phone, otpCode);
     }
 
     @Override
     @Transactional
-    public AuthResponse verifyGooglePhoneOtp(String email, String otpCode) {
-        Otp otp = otpRepository.findById(email)
-                .orElseThrow(() -> new OtpInvalidException("OTP invalid or expired"));
+    public AuthResponse verifyRegisterGooglePhoneOtp(String email, String phone, String otpCode) {
+        validateGlobalOtp(otpCode, OtpType.REGISTER_GOOGLE, phone);
 
-        if (!otp.getCode().equals(otpCode) || otp.getType() != OtpType.REGISTER_GOOGLE) {
-            throw new OtpInvalidException("OTP invalid");
+        if (userRepository.existsByPhone(phone)) {
+            throw new PhoneAlreadyExistsException("Phone is already registered");
         }
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new DocumentNotFoundException("User not found"));
 
-        user.setPhone(otp.getTarget());
+        user.setPhone(phone);
         user.setPhoneVerified(true);
         userRepository.save(user);
 
-        RappiUserDetails userDetails = new RappiUserDetails(user);
-
-        String accessToken = jwtService.generateAccessToken(userDetails);
-        String refreshToken = refreshTokenService.createRefreshToken(user.getId()).getToken();
-        long expiresIn = jwtService.getExpirationTime(accessToken) / 1000;
-
-        return AuthResponse.builder()
-                .token(accessToken)
-                .refreshToken(refreshToken)
-                .expiresIn(expiresIn)
-                .requiresPhone(false)
-                .build();
+        return generateAuthResponse(user);
     }
 
     private String generateOtp() {
         return String.format("%06d", new SecureRandom().nextInt(999999));
     }
 
-    private void validateUserExistsByPhone(String phone) {
-        if (!userRepository.existsByPhone(phone)) {
-            throw new DocumentNotFoundException("User not found");
-        }
-    }
-
-    private void validateUserExistsByEmail(String email) {
+    private void validateEmailExists(String email) {
         if (!userRepository.existsByEmailIgnoreCase(email)) {
-            throw new DocumentNotFoundException("User not found");
+            throw new EmailNotExistsException("Email is not registered");
         }
     }
 
-    private User validateOtpAndGetUser(String identifier, String otpCode) {
-        Otp otp = otpRepository.findById(identifier)
-                .orElseThrow(() -> new OtpInvalidException("OTP invalid or expired"));
+    private void validateGlobalOtp(String otpCode, OtpType otpType, String target) {
+        Otp otp = otpRepository.findByTypeAndTarget(otpType, target)
+                .orElseThrow(() -> new OtpInvalidException("OTP mismatch or expired"));
 
         if (!otp.getCode().equals(otpCode)) {
-            throw new OtpInvalidException("OTP incorrect");
+            throw new OtpInvalidException("OTP code incorrect");
         }
 
-        return switch (otp.getType()) {
-            case LOGIN_EMAIL -> userRepository.findByEmail(identifier)
-                    .orElseThrow(() -> new DocumentNotFoundException("User not found"));
-            case LOGIN_PHONE -> userRepository.findByPhone(identifier)
-                    .orElseThrow(() -> new DocumentNotFoundException("User not found"));
-            default -> throw new OtpInvalidException("OTP is not for login");
-        };
+        otpRepository.deleteById(otp.getKey());
     }
 
     private AuthResponse generateAuthResponse(User user) {
@@ -269,6 +269,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .token(accessToken)
                 .refreshToken(refreshToken)
                 .expiresIn(expiresIn)
+                .requiresPhone(false)
                 .build();
     }
 }

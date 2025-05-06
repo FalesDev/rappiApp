@@ -45,13 +45,13 @@ public class OAuth2UserManagementService {
                 .orElseGet(() -> userRepository.save(
                         User.builder()
                                 .email(email)
+                                .password(null)
                                 .firstName(firstName)
                                 .lastName(lastName)
-                                .imageURL(picture)
-                                .role(defaultRole)
-                                .registerType(registerType)
                                 .phoneVerified(false)
-                                .password(null)
+                                .role(defaultRole)
+                                .imageURL(picture)
+                                .registerType(registerType)
                                 .build()
                 ));
     }
