@@ -104,8 +104,9 @@ public class SecurityConfig {
 
                         // Endpoints de autenticación
                         .requestMatchers(HttpMethod.POST,
-                                "/api/v1/auth/verify",
+                                "/api/v1/auth/phone/verify",
                                 "/api/v1/auth/register",
+                                "/api/v1/auth/email",
                                 "/api/v1/auth/google",
                                 "/api/v1/auth/google/phone/verify",
                                 "/api/v1/auth/refresh"
