@@ -1,7 +1,7 @@
 package com.falesdev.rappi.security.service;
 
 import com.falesdev.rappi.domain.document.User;
-import com.falesdev.rappi.repository.mongo.UserRepository;
+import com.falesdev.rappi.repository.UserRepository;
 import com.falesdev.rappi.security.RappiUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;

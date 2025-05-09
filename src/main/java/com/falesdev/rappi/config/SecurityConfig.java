@@ -1,7 +1,7 @@
 package com.falesdev.rappi.config;
 
 import com.falesdev.rappi.domain.dto.response.ApiErrorResponse;
-import com.falesdev.rappi.repository.mongo.UserRepository;
+import com.falesdev.rappi.repository.UserRepository;
 import com.falesdev.rappi.security.auth.JwtAuthenticationFilter;
 import com.falesdev.rappi.security.RappiUserDetails;
 import com.falesdev.rappi.security.service.RappiUserDetailsService;
@@ -103,18 +103,17 @@ public class SecurityConfig {
                         ).permitAll()
 
                         // Endpoints de autenticación
-                        .requestMatchers(
-                                "/login",
-                                "/oauth2/**",
-                                "/api/v1/auth/oauth-success").permitAll()
-                        .requestMatchers("/api/v1/auth/login/**").permitAll()
-                        .requestMatchers("/api/v1/auth/register/phone/**").permitAll()
-                        .requestMatchers(HttpMethod.POST,"/api/v1/auth/register/google").permitAll()
-                        .requestMatchers("/api/v1/auth/register/google/**").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/refresh").permitAll()
-                        .requestMatchers(HttpMethod.GET,"/api/v1/auth/me").authenticated()
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/v1/auth/verify",
+                                "/api/v1/auth/register",
+                                "/api/v1/auth/google",
+                                "/api/v1/auth/google/phone/verify",
+                                "/api/v1/auth/refresh"
+                        ).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/auth/oauth-success").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/auth/me").authenticated()
 
-                        // Endpoints de posts,categories,tags,roles,users
+                        // Endpoints administrativos
                         .requestMatchers(HttpMethod.GET,"/api/v1/roles/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/users/**").hasRole("ADMIN")
                         .anyRequest().authenticated()

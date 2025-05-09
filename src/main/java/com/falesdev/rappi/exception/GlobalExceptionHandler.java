@@ -1,14 +1,18 @@
 package com.falesdev.rappi.exception;
 
 import com.falesdev.rappi.domain.dto.response.ApiErrorResponse;
-import io.lettuce.core.RedisCommandTimeoutException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 @Slf4j
@@ -119,18 +123,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
     }
 
-    @ExceptionHandler(OtpInvalidException.class)
-    public ResponseEntity<ApiErrorResponse> handleOtpInvalidException(OtpInvalidException ex) {
-        log.warn("Invalid OTP attempt: {}", ex.getMessage());
-
-        ApiErrorResponse error = ApiErrorResponse.builder()
-                .status(HttpStatus.UNAUTHORIZED.value())
-                .message(ex.getMessage())
-                .build();
-
-        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
-    }
-
     @ExceptionHandler(AuthenticationMethodConflictException.class)
     public ResponseEntity<ApiErrorResponse> handleAuthMethodConflict(AuthenticationMethodConflictException ex) {
         ApiErrorResponse error = ApiErrorResponse.builder()
@@ -151,30 +143,6 @@ public class GlobalExceptionHandler {
         );
     }
 
-    @ExceptionHandler(EmailException.class)
-    public ResponseEntity<ApiErrorResponse> handleEmailException(EmailException ex) {
-        log.error("Mail service error: {}", ex.getMessage());
-
-        ApiErrorResponse error = ApiErrorResponse.builder()
-                .status(HttpStatus.BAD_GATEWAY.value())
-                .message("Error sending email")
-                .build();
-
-        return new ResponseEntity<>(error, HttpStatus.BAD_GATEWAY);
-    }
-
-    @ExceptionHandler(RedisCommandTimeoutException.class)
-    public ResponseEntity<ApiErrorResponse> handleRedisTimeout(RedisCommandTimeoutException ex) {
-        log.warn("Redis timeout: {}", ex.getMessage());
-
-        ApiErrorResponse error = ApiErrorResponse.builder()
-                .status(HttpStatus.GATEWAY_TIMEOUT.value())
-                .message("Redis service is temporarily unavailable. Please try again.")
-                .build();
-
-        return new ResponseEntity<>(error, HttpStatus.GATEWAY_TIMEOUT);
-    }
-
     @ExceptionHandler(UsernameNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleUsernameNotFoundException(UsernameNotFoundException ex) {
         ApiErrorResponse error = ApiErrorResponse.builder()
@@ -182,5 +150,26 @@ public class GlobalExceptionHandler {
                 .message("Invalid credentials")
                 .build();
         return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        BindingResult result = ex.getBindingResult();
+
+        List<ApiErrorResponse.FieldError> errors = result.getFieldErrors()
+                .stream()
+                .map(error -> ApiErrorResponse.FieldError.builder()
+                        .field(error.getField())
+                        .message(error.getDefaultMessage())
+                        .build())
+                .collect(Collectors.toList());
+
+        ApiErrorResponse response = ApiErrorResponse.builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .message("Validation failed")
+                .errors(errors)
+                .build();
+
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 }

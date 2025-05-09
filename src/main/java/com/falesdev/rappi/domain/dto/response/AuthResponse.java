@@ -16,5 +16,7 @@ public class AuthResponse {
     private long expiresIn;
 
     @Builder.Default
-    private boolean requiresPhone = false;
+    private boolean requiresPhoneVerification = false;
+
+    private String tempUserId;
 }

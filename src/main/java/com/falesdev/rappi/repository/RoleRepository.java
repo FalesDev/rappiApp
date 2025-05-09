@@ -1,4 +1,4 @@
-package com.falesdev.rappi.repository.mongo;
+package com.falesdev.rappi.repository;
 
 import com.falesdev.rappi.domain.document.Role;
 import org.springframework.data.mongodb.repository.MongoRepository;

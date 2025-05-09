@@ -9,8 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PhoneRegisterResponse {
+public class EmailLoginResponse {
 
     private String phone;
-    private Boolean isRegistered;
 }

@@ -6,5 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-public record GoogleLoginRequest (@NotBlank String idToken){
+public record GoogleLoginRequest (
+        @NotBlank(message = "Token is required")
+        String idToken
+){
 }

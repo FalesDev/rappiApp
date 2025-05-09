@@ -6,8 +6,8 @@ import com.falesdev.rappi.domain.document.User;
 import com.falesdev.rappi.exception.AuthenticationMethodConflictException;
 import com.falesdev.rappi.exception.BadRequestException;
 import com.falesdev.rappi.exception.DocumentNotFoundException;
-import com.falesdev.rappi.repository.mongo.RoleRepository;
-import com.falesdev.rappi.repository.mongo.UserRepository;
+import com.falesdev.rappi.repository.RoleRepository;
+import com.falesdev.rappi.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
