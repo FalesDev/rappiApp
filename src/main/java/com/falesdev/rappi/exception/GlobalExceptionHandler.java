@@ -22,7 +22,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiErrorResponse> handleIllegalStateException(IllegalStateException ex){
         ApiErrorResponse error = ApiErrorResponse.builder()
                 .status(HttpStatus.CONFLICT.value())
-                .message("Operation not allowed")
+                .message(ex.getMessage())
                 .build();
         return new ResponseEntity<>(error, HttpStatus.CONFLICT);
     }
@@ -171,5 +171,23 @@ public class GlobalExceptionHandler {
                 .build();
 
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(AddressAlreadyExistsException.class)
+    public ResponseEntity<ApiErrorResponse> handleAddressAlreadyExistsException(AddressAlreadyExistsException ex) {
+        ApiErrorResponse error = ApiErrorResponse.builder()
+                .status(HttpStatus.CONFLICT.value())
+                .message(ex.getMessage())
+                .build();
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(AddressNotExistsException.class)
+    public ResponseEntity<ApiErrorResponse> handleAddressNotExistsException(AddressNotExistsException ex) {
+        ApiErrorResponse error = ApiErrorResponse.builder()
+                .status(HttpStatus.NOT_FOUND.value())
+                .message(ex.getMessage())
+                .build();
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 }

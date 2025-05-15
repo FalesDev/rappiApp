@@ -1,5 +1,6 @@
 package com.falesdev.rappi.domain.dto.request;
 
+import com.falesdev.rappi.domain.document.Address;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -50,12 +51,12 @@ public class UpdateUserRequestDto {
 
     private boolean phoneVerified;
 
-    @NotNull(message = "Role is required")
+    @NotBlank(message = "Role is required")
     private String roleId;
 
     @URL(protocol = "https", message = "Must be a valid HTTPS URL")
     private String imageURL;
 
     @Builder.Default
-    private Set<String> addresses = new HashSet<>();
+    private Set<Address> addresses = new HashSet<>();
 }

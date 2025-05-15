@@ -1,6 +1,7 @@
 package com.falesdev.rappi.domain.dto;
 
 import com.falesdev.rappi.domain.RegisterType;
+import com.falesdev.rappi.domain.document.Address;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,7 +29,7 @@ public class UserDto {
     private RoleDto role;
     private String imageURL;
     private RegisterType registerType;
-    private Set<String> addresses;
+    private Set<Address> addresses;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

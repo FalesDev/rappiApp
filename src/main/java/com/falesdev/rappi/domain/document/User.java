@@ -47,7 +47,7 @@ public class User {
     private RegisterType registerType;
 
     @Builder.Default
-    private Set<String> addresses = new HashSet<>();
+    private Set<Address> addresses = new HashSet<>();
 
     @CreatedDate
     private LocalDateTime createdAt;

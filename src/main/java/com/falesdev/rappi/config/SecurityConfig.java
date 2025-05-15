@@ -117,6 +117,10 @@ public class SecurityConfig {
                         // Endpoints administrativos
                         .requestMatchers(HttpMethod.GET,"/api/v1/roles/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/users/**").hasRole("ADMIN")
+
+                        // Endpoints de direcciones (usuarios autenticados)
+                        .requestMatchers("/api/v1/me/addresses/**").authenticated()
+
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth -> oauth
